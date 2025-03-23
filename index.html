@@ -139,66 +139,62 @@
   { name: "HAD", races: [-20, 11], color: "#4169E1", currentPrice: 6.2 }
 ];
 
+
     /**
      * Returns { finalPrice, prevPrice }
      *  finalPrice: the price after processing all races
      *  prevPrice:  the price before the *last* race was applied
      */
-    function computePriceEvolution(driver) {
-      let price = driver.currentPrice;
-      let prevPrice = price; // will update after each race
-      const races = driver.races;
+     function computePriceEvolution(driver) {
+  let price = driver.currentPrice;
+  let prevPrice = price; // will update after each race
+  const races = driver.races;
 
-      for (let i = 0; i < races.length; i++) {
-        // Store price before applying this race's changes
-        const oldPrice = price;
-
-        // Compute the average points among up to 3 recent races
-        let avgPoints;
-        if (i === 0) {
-          avgPoints = (races[0] + 0 + 0) / 3;
-        } else if (i === 1) {
-          avgPoints = (races[0] + races[1] + 0) / 3;
-        } else {
-          avgPoints = (races[i - 2] + races[i - 1] + races[i]) / 3;
-        }
-
-        // Tier-based delta
-        const ppm = avgPoints / price;
-        let delta = 0;
-        if (price > 20) {
-          // Tier A
-          if (ppm < 0.2) {
-            delta = -0.3;
-          } else if (ppm < 0.3) {
-            delta = -0.1;
-          } else if (ppm < 0.4) {
-            delta = 0.1;
-          } else {
-            delta = 0.3;
-          }
-        } else {
-          // Tier B
-          if (ppm < 0.2) {
-            delta = -0.6;
-          } else if (ppm < 0.3) {
-            delta = -0.2;
-          } else if (ppm < 0.4) {
-            delta = 0.2;
-          } else {
-            delta = 0.6;
-          }
-        }
-        price += delta;
-
-        // On the last iteration, record the price before that last update
-        if (i === races.length - 1) {
-          prevPrice = oldPrice;
-        }
-      }
-
-      return { finalPrice: price, prevPrice };
+  for (let i = 0; i < races.length; i++) {
+    const oldPrice = price;
+    let avgPoints;
+    if (i === 0) {
+      // For the first race, pad with two zeros and use denominator 3.5
+      avgPoints = (races[0] + 0 + 0) / 3.5;
+    } else if (i === 1) {
+      // For the second race, pad with one zero and use denominator 3.5
+      avgPoints = (races[0] + races[1] + 0) / 3.5;
+    } else {
+      // For three or more races, use the average of the last 3 races
+      avgPoints = (races[i - 2] + races[i - 1] + races[i]) / 3;
     }
+
+    const ppm = avgPoints / price;
+    let delta = 0;
+    if (price > 20) {
+      if (ppm < 0.2) {
+        delta = -0.3;
+      } else if (ppm < 0.3) {
+        delta = -0.1;
+      } else if (ppm < 0.4) {
+        delta = 0.1;
+      } else {
+        delta = 0.3;
+      }
+    } else {
+      if (ppm < 0.2) {
+        delta = -0.6;
+      } else if (ppm < 0.3) {
+        delta = -0.2;
+      } else if (ppm < 0.4) {
+        delta = 0.2;
+      } else {
+        delta = 0.6;
+      }
+    }
+    price += delta;
+    if (i === races.length - 1) {
+      prevPrice = oldPrice;
+    }
+  }
+  return { finalPrice: price, prevPrice };
+}
+
 
     // Predicted race points for next race
     function computePredictedRacePoints(driver) {
